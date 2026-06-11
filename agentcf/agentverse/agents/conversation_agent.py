@@ -4,7 +4,7 @@ import logging
 from logging import getLogger
 import bdb
 from string import Template
-from typing import TYPE_CHECKING, List
+from typing import TYPE_CHECKING, ClassVar, List, Any
 import random
 from agentverse.message import Message
 from pydantic import BaseModel, Field
@@ -67,9 +67,9 @@ class RecAgent(BaseAgent):
     system_prompt_template_evaluation_sequential: str
     n_users: int = 500
     memory: list = []
-    user_examples = defaultdict(dict)
+    user_examples: ClassVar[dict] = defaultdict(dict)
 
-    user_id2memory: dict = defaultdict(list)
+    user_id2memory: ClassVar[dict] = defaultdict(list)
     def step(self, env_description: str = "") -> Message:
         prompt = self._fill_prompt_template(env_description)
 
@@ -245,7 +245,7 @@ class UserAgent(BaseAgent):
     memory_1: list = []
     update_memory: list = []
     feedback: list = []
-    historical_interactions: dict = {}
+    historical_interactions: Any = {}
 
     def step(self, env_description: str = "") -> Message:
         prompt = self._fill_prompt_template(env_description)
@@ -401,6 +401,12 @@ class ItemAgent(BaseAgent):
     memory: list = []
     update_memory: list = []
     memory_review: dict = {}
+    community_prior: str = ""
+
+    def get_full_description(self) -> str:
+        if self.community_prior:
+            return f"[Community context: {self.community_prior}] {self.update_memory[-1]}"
+        return self.update_memory[-1]
 
     def step(self, env_description: str = "") -> Message:
         prompt = self._fill_prompt_template(env_description)

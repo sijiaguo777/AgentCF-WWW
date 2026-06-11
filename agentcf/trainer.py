@@ -33,7 +33,7 @@ class LanguageLossTrainer(Trainer):
         eval_func = self._full_sort_batch_eval
         if load_best_model:
             checkpoint_file = model_file or self.saved_model_file
-            checkpoint = torch.load(checkpoint_file, map_location=self.device)
+            checkpoint = torch.load(checkpoint_file, map_location=self.device, weights_only=False)
             self.model.load_state_dict(checkpoint["state_dict"])
             self.model.load_other_parameter(checkpoint.get("other_parameter"))
             message_output = "Loading model structure and parameters from {}".format(
@@ -62,11 +62,13 @@ class LanguageLossTrainer(Trainer):
                 user_id = int(interaction['user_id'][i].item())
                 sampled_item = self.user2sampled_item[user_id]
                 sampled_items.append(sampled_item)
+            max_len = max(len(s) for s in sampled_items)
+            sampled_items = [s + [0] * (max_len - len(s)) for s in sampled_items]
             sampled_items = torch.LongTensor(sampled_items)
 
             if self.config['has_gt']:
                 self.logger.info('Has ground truth')
-                idxs = torch.LongTensor(sampled_items)
+                idxs = sampled_items
                 for i in range(idxs.shape[0]):
                     if positive_i[i] in idxs[i]:
                         pr = idxs[i].cpu().numpy().tolist().index(positive_i[i].item())
@@ -232,7 +234,7 @@ class ITEMLanguageLossTrainer(LanguageLossTrainer):
         eval_func = self._full_sort_batch_eval
         if load_best_model:
             checkpoint_file = model_file or self.saved_model_file
-            checkpoint = torch.load(checkpoint_file, map_location=self.device)
+            checkpoint = torch.load(checkpoint_file, map_location=self.device, weights_only=False)
             self.model.load_state_dict(checkpoint["state_dict"])
             self.model.load_other_parameter(checkpoint.get("other_parameter"))
             message_output = "Loading model structure and parameters from {}".format(
@@ -262,11 +264,13 @@ class ITEMLanguageLossTrainer(LanguageLossTrainer):
                 item_id = int(interaction['item_id'][i].item())
                 sampled_item = self.item2sampled_item[item_id]
                 sampled_items.append(sampled_item)
+            max_len = max(len(s) for s in sampled_items)
+            sampled_items = [s + [0] * (max_len - len(s)) for s in sampled_items]
             sampled_items = torch.LongTensor(sampled_items)
 
             if self.config['has_gt']:
                 self.logger.info('Has ground truth')
-                idxs = torch.LongTensor(sampled_items)
+                idxs = sampled_items
                 for i in range(idxs.shape[0]):
                     if positive_i[i] in idxs[i]:
                         pr = idxs[i].cpu().numpy().tolist().index(positive_i[i].item())

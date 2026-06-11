@@ -1,4 +1,4 @@
-import sys
+import sys, os
 from logging import getLogger
 import argparse
 from recbole.config import Config
@@ -11,6 +11,10 @@ from dataset import BPRDataset, ITEMBPRDataset
 
 def run_baseline(model_name, dataset_name, **kwargs):
     props = ['props/overall.yaml', f'props/{model_name}.yaml', f'props/{dataset_name}.yaml']
+    # Load dataset-specific model config if it exists (e.g., AgentCF-ScientificKG.yaml)
+    combined_config = f'props/{model_name}-{dataset_name}.yaml'
+    if os.path.exists(combined_config):
+        props.append(combined_config)
     print(props)
 
     model_class = get_model(model_name)
@@ -65,7 +69,7 @@ def run_baseline(model_name, dataset_name, **kwargs):
         trainer.fit(train_data, valid_data, saved=True, show_progress=config["show_progress"])
 
     # model evaluation
-    test_result = trainer.evaluate(test_data, model_file='./AgentCF-Sep-07-2024_16-09-29.pth', load_best_model=False, show_progress=config["show_progress"])
+    test_result = trainer.evaluate(test_data, load_best_model=True, show_progress=config["show_progress"])
     print(test_result)
     # logger.info(set_color("best valid ", "yellow") + f": {best_valid_result}")
     logger.info(set_color("test result", "yellow") + f": {test_result}")

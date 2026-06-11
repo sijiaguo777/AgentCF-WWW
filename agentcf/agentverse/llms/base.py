@@ -6,9 +6,9 @@ from pydantic import BaseModel, Field
 
 class LLMResult(BaseModel):
     content: str
-    send_tokens: int
-    recv_tokens: int
-    total_tokens: int
+    send_tokens: int = 0
+    recv_tokens: int = 0
+    total_tokens: int = 0
 
 
 class BaseModelArgs(BaseModel):
