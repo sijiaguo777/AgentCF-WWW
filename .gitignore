@@ -7,8 +7,13 @@ dist/
 build/
 *.egg
 
-# Training artifacts (tensorboard logs - not tracked by LFS)
+# Training artifacts
+agentcf/log/
 agentcf/log_tensorboard/
+agentcf/saved/
+
+# Datasets (large files, transfer manually via scp)
+agentcf/dataset/
 
 # IDE
 .idea/
